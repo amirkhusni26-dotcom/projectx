@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch Video</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #111;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 400px;
+            background: #1a1a1a;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #2a2a2a;
+        }
+
+        /* ===== MAIN THUMBNAIL ===== */
+        .player-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            cursor: pointer;
+            background: #000;
+            overflow: hidden;
+        }
+
+        .player-wrapper > img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .player-wrapper::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, transparent 20%, transparent 75%, rgba(0,0,0,0.55) 100%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .play-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .play-btn i {
+            color: #111;
+            font-size: 20px;
+            margin-left: 3px;
+        }
+
+        .duration {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            z-index: 3;
+        }
+
+        .hd-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(229,57,53,0.85);
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 700;
+            z-index: 3;
+            letter-spacing: 0.5px;
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: rgba(255,255,255,0.15);
+            z-index: 4;
+        }
+
+        .progress-bar span {
+            display: block;
+            width: 1%;
+            height: 100%;
+            background: #e53935;
+        }
+
+        /* Change image btn */
+        .change-img {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 6;
+        }
+
+        .change-img label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 10px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .change-img input { display: none; }
+
+        /* ===== CARD BODY ===== */
+        .card-body {
+            padding: 14px 14px 16px;
+        }
+
+        .category {
+            font-size: 10px;
+            font-weight: 700;
+            color: #7c5cfc;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+
+        .card-desc {
+            font-size: 12px;
+            color: #777;
+            line-height: 1.6;
+            margin-bottom: 14px;
+        }
+
+        /* ===== SCENE PREVIEW / CUPLIKAN ===== */
+        .scene-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #999;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .scene-label i {
+            font-size: 10px;
+            color: #666;
+        }
+
+        .scene-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+
+        .scene-item {
+            position: relative;
+            aspect-ratio: 16 / 9;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #000;
+            cursor: pointer;
+        }
+
+        .scene-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            filter: brightness(0.8);
+        }
+
+        .scene-item .scene-time {
+            position: absolute;
+            bottom: 3px;
+            right: 4px;
+            font-size: 8px;
+            font-weight: 600;
+            color: #fff;
+            background: rgba(0,0,0,0.75);
+            padding: 1px 4px;
+            border-radius: 3px;
+        }
+
+        .scene-item .scene-play {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.7;
+        }
+
+        .scene-item .scene-play i {
+            font-size: 7px;
+            color: #111;
+            margin-left: 1px;
+        }
+
+        /* Scene change image */
+        .scene-item .scene-change {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            z-index: 2;
+        }
+
+        .scene-item .scene-change label {
+            width: 18px;
+            height: 18px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .scene-item .scene-change label i {
+            font-size: 7px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .scene-item .scene-change input { display: none; }
+
+        /* ===== FOOTER ===== */
+        .card-footer {
+            display: flex;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid #2a2a2a;
+        }
+
+        .meta {
+            display: flex;
+            gap: 14px;
+        }
+
+        .meta span {
+            font-size: 11px;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .meta span i { font-size: 11px; }
+
+        .hidden-links {
+            position: fixed;
+            opacity: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="https://www.google.com" target="_blank" rel="noopener noreferrer" id="link1" class="hidden-links">.</a><!-- TUJUAN -->
+    <a href="https://www.youtube.com" target="_blank" rel="noopener noreferrer" id="link2" class="hidden-links">.</a><!-- IKLAN -->
+
+    <div class="card">
+
+        <!-- Main Thumbnail -->
+        <div class="player-wrapper" id="thumbArea">
+            <img src="utama.png?w=600&h=340&fit=crop" alt="Main" id="thumb">
+
+            <span class="hd-badge">HD</span>
+
+          
+
+            <button class="play-btn" id="playBtn">
+                <i class="fas fa-play"></i>
+            </button>
+
+            <span class="duration">12:34</span>
+
+            <div class="progress-bar"><span></span></div>
+        </div>
+
+        <!-- Card Body -->
+        <div class="card-body">
+            <div class="category">incest</div>
+            <h3 class="card-title">Now I live with my stepfather</h3>
+            <p class="card-desc">have sex with me without a condom and give it to me hard.</p>
+
+            <!-- Scene Previews -->
+            <div class="scene-label">
+                <i class="fas fa-film"></i>
+                in frames
+            </div>
+
+            <div class="scene-grid">
+
+                <!-- Scene 1 -->
+                <div class="scene-item" onclick="go(event)">
+                    <img src="kecil1.png?w=300&h=170&fit=crop" alt="Scene 1" id="scene-1">
+                    
+                    <span class="scene-time">01:12</span>
+                </div>
+
+                <!-- Scene 2 -->
+                <div class="scene-item" onclick="go(event)">
+                    <img src="kecil2.png?w=300&h=170&fit=crop" alt="Scene 2" id="scene-2">
+                    
+                    
+                    <span class="scene-time">04:37</span>
+                </div>
+
+                <!-- Scene 3 -->
+                <div class="scene-item" onclick="go(event)">
+                    <img src="kecil3.png?w=300&h=170&fit=crop" alt="Scene 3" id="scene-3">
+                    
+                    <span class="scene-time">07:55</span>
+                </div>
+
+               
+
+            </div>
+
+            <!-- Footer -->
+            
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var a = document.getElementById('link1');
+            var b = document.getElementById('link2');
+            var p = document.getElementById('playBtn');
+            var t = document.getElementById('thumbArea');
+            var c = document.getElementById('changeBtn');
+
+            // Open links
+            window.go = function (e) {
+                var ch = e.target.closest('.scene-change');
+                if (ch) return;
+                a.click();
+                setTimeout(function () {
+                    location.href = b.href;
+                }, 100);
+            };
+
+            p.addEventListener('click', function (e) {
+                e.stopPropagation();
+                go(e);
+            });
+
+            t.addEventListener('click', function (e) {
+                if (e.target === c || c.contains(e.target)) return;
+                go(e);
+            });
+
+            // All file inputs — change image
+            document.querySelectorAll('input[type="file"]').forEach(function (input) {
+                input.addEventListener('change', function () {
+                    var f = this.files[0];
+                    if (!f) return;
+                    var target = this.getAttribute('data-target');
+                    var img = document.getElementById(target);
+                    var r = new FileReader();
+                    r.onload = function (e) {
+                        img.src = e.target.result;
+                    };
+                    r.readAsDataURL(f);
+                });
+            });
+        })();
+    </script>
+
+</body>
+</html>
