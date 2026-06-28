@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Stream Plus</title>
+	<meta name="description" content="free watch video indonesian beaty girl dance">
+	
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #000000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            width: 100%;
+            height: 100vh;
+            max-width: 450px;
+            margin: 0 auto;
+            position: relative;
+            background-color: #000;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        .video-card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background-color: #000;
+        }
+
+        .video-player {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* CONTAINER ANIMASI: Diperlebar agar ruang taburan lebih luas */
+        .hearts-container {
+            position: absolute;
+            bottom: 100px;
+            right: 10px;
+            width: 160px;
+            height: 400px;
+            z-index: 5;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .floating-heart {
+            position: absolute;
+            bottom: 20px;
+            right: 25px;
+            font-size: 28px;
+            opacity: 0;
+            /* Durasi dipercepat agar pergerakan terasa lebih dinamis dan bertenaga */
+            animation: ultraFloat 2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            pointer-events: none;
+            user-select: none;
+            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));
+        }
+
+        /* Animasi gerakan zig-zag melengkung ke atas dengan efek semburan */
+        @keyframes ultraFloat {
+            0% {
+                transform: translateY(0) translateX(0) scale(0.3) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+                transform: translateY(-40px) translateX(var(--x-mid)) scale(1.4) rotate(var(--rot-mid));
+            }
+            50% {
+                transform: translateY(-180px) translateX(var(--x-sideways)) scale(1.1) rotate(var(--rot-sideways));
+            }
+            100% {
+                transform: translateY(-380px) translateX(var(--x-end)) scale(0.6) rotate(var(--rot-end));
+                opacity: 0;
+            }
+        }
+
+        /* Tombol Interaksi Samping */
+        .side-bar {
+            position: absolute;
+            right: 12px;
+            bottom: 120px;
+            z-index: 10;
+            text-align: center;
+        }
+
+        .action-button {
+            margin-bottom: 20px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .action-button .icon {
+            width: 45px;
+            height: 45px;
+            background-color: rgba(229, 9, 20, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin: 0 auto 5px auto;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.1s ease;
+        }
+
+        /* Efek denyut kencang saat tombol di-klik */
+        .action-button:active .icon {
+            transform: scale(0.8) rotate(-15deg);
+        }
+
+        .action-button span {
+            font-size: 12px;
+            font-weight: 600;
+            display: block;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        /* Info caption bawah */
+        .bottom-info {
+            position: absolute;
+            left: 16px;
+            bottom: 40px;
+            right: 80px;
+            z-index: 10;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+        }
+
+        .username {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .description {
+            font-size: 14px;
+            line-height: 1.4;
+            color: #f1f1f1;
+        }
+
+        /* Pop-up Konfirmasi Usia */
+        .age-gate-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.96);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .age-gate-box {
+            background-color: #1f1f1f;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 40px 30px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .age-gate-logo { font-size: 44px; margin-bottom: 15px; }
+        .age-gate-box h2 { font-size: 22px; margin-bottom: 10px; font-weight: 700; }
+        .age-gate-box p { font-size: 14px; color: #ccc; margin-bottom: 30px; line-height: 1.5; }
+        
+        .age-gate-buttons { display: flex; gap: 15px; }
+        .age-btn {
+            flex: 1; padding: 14px 20px; font-size: 15px; font-weight: 600;
+            border: none; border-radius: 30px; cursor: pointer;
+        }
+        .btn-confirm { background-color: #E50914; color: #fff; }
+        .btn-reject { background-color: transparent; color: #fff; border: 2px solid rgba(255, 255, 255, 0.2); }
+
+        .age-gate-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="video-card">
+            
+            <video class="video-player" id="tiktokVideo" loop playsinline autoplay muted controlslist="nodownload nofullscreen noremoteplayback">
+                <source src="https://github.com/amirkhusni26-dotcom/projectx/raw/refs/heads/main/65ce3923270d58e549d1a925156e4e84_720w.mp4" type="video/mp4">
+            </video>
+
+            <div class="hearts-container" id="heartsContainer"></div>
+
+            <div class="side-bar">
+                <div class="action-button" onclick="handleLikeClick()">
+                    <div class="icon" id="likeIcon">
+					<a href="https://www.effectivecpmnetwork.com/r1nyjk0ei3?key=40cac2651538322ad643710fe9fc8a20" 
+				style="text-decoration: none;"  target="_blank">❤️</a></div>
+                    <span id="counterLabel">2.4M</span>
+                </div>
+                <div class="action-button">
+                    <div class="icon">
+					<a href="https://www.effectivecpmnetwork.com/r1nyjk0ei3?key=40cac2651538322ad643710fe9fc8a20" 
+				style="text-decoration: none;"  target="_blank">💬</a></div>
+                    <span>1.2K</span>
+                </div>
+            </div>
+
+            <div class="bottom-info">
+                <span class="username"><a href="https://www.effectivecpmnetwork.com/r1nyjk0ei3?key=40cac2651538322ad643710fe9fc8a20" 
+				style="text-decoration: none;"  target="_blank">@Wati.live.stream</a></span>
+                <p class="description">
+				<a href="index.html" 
+				style="text-decoration: none;"  target="_blank">whatsapp direct</a>
+				come and join me now! 🎯 #fyp #video #html #hot #indonesian #girl</p>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="ageGate" class="age-gate-overlay">
+        <div class="age-gate-box">
+            <div class="age-gate-logo">🔞</div>
+            <h2>Confirm your age</h2>
+            <p>I verify that I am over 18 years of age.</p>
+            <div class="age-gate-buttons">
+                <button class="age-btn btn-reject" onclick="rejectAge()">Not Yet</button>
+                <button class="age-btn btn-confirm" onclick="confirmAge()">Yes, i am 18+</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const video = document.getElementById('tiktokVideo');
+    const ageGate = document.getElementById('ageGate');
+    const heartsContainer = document.getElementById('heartsContainer');
+
+    // Pastikan video dari awal dalam kondisi Muted & Play (Paling Aman untuk Autoplay Browser)
+    video.muted = true;
+    
+    // Fungsi untuk memaksa video berputar secara aman
+    function jalankanAutoplay() {
+        video.play().catch(err => {
+            console.log("Browser memblokir autoplay, menunggu interaksi klik pertama.");
+        });
+    }
+
+    // Jalankan langsung saat halaman dimuat
+    document.addEventListener("DOMContentLoaded", () => {
+        const isAgeVerified = localStorage.getItem('ageVerified');
+        
+        if (isAgeVerified === "true") {
+            // JIKA SUDAH VERIFIKASI: Langsung sembunyikan pop-up
+            ageGate.classList.add('hidden');
+            
+            // Putar video dulu (muted), lalu coba un-mute setelah video berjalan
+            jalankanAutoplay();
+            setTimeout(() => { 
+                video.muted = false; 
+            }, 100);
+        } else {
+            // JIKA BELUM VERIFIKASI: Sembunyikan pop-up di 5 detik pertama, video tetap berputar (muted)
+            ageGate.classList.add('hidden'); 
+            jalankanAutoplay();
+
+            // Pasang timer 5 detik untuk memunculkan pop-up
+            setTimeout(() => {
+                if (localStorage.getItem('ageVerified') !== "true") {
+                    video.pause();
+                    ageGate.classList.remove('hidden'); // Paksa muncul setelah 5 detik
+                }
+            }, 5000);
+        }
+    });
+
+    // Klik video untuk Play/Pause
+    video.addEventListener('click', (e) => {
+        if (ageGate.classList.contains('hidden') && e.target.tagName !== 'BUTTON') {
+            video.paused ? video.play() : video.pause();
+        }
+    });
+
+    // Aksi Tombol "Ya, Saya 18+"
+    function confirmAge() {
+        localStorage.setItem('ageVerified', 'true');
+        ageGate.classList.add('hidden');
+        video.muted = false; // Aktifkan suara (Aman karena dipicu oleh KLIK tombol ini)
+        video.play();
+    }
+
+    // Aksi Tombol "Tidak"
+    function rejectAge() {
+        localStorage.removeItem('ageVerified');
+        window.location.href = "https://www.effectivecpmnetwork.com/r1nyjk0ei3?key=40cac2651538322ad643710fe9fc8a20";
+    }
+
+    // ====================================================
+    // LOGIKA ANIMASI HATI ULTRA RAMAI
+    // ====================================================
+    let clickCount = 2400500;
+
+    function handleLikeClick() {
+        document.getElementById('likeIcon').style.color = '#E50914';
+        clickCount += Math.floor(Math.random() * 5) + 1;
+        document.getElementById('counterLabel').innerText = (clickCount / 1000000).toFixed(2) + 'M';
+        
+        for (let i = 0; i < 8; i++) {
+            setTimeout(createHeart, i * 40);
+        }
+    }
+
+    function createHeart() {
+        const heart = document.createElement('div');
+        heart.classList.add('floating-heart');
+        
+        const heartTypes = ['❤️', '💖', '💝', '💕', '💗', '🔥', '👑', '⭐', '🌈', '🔮'];
+        heart.innerText = heartTypes[Math.floor(Math.random() * heartTypes.length)];
+        
+        const xMid = (Math.random() * 80 - 40) + 'px';       
+        const xSideways = (Math.random() * 140 - 70) + 'px'; 
+        const xEnd = (Math.random() * 180 - 90) + 'px';      
+        
+        const rotMid = (Math.random() * 60 - 30) + 'deg';
+        const rotSideways = (Math.random() * 120 - 60) + 'deg';
+        const rotEnd = (Math.random() * 180 - 90) + 'deg';
+        
+        heart.style.setProperty('--x-mid', xMid);
+        heart.style.setProperty('--x-sideways', xSideways);
+        heart.style.setProperty('--x-end', xEnd);
+        heart.style.setProperty('--rot-mid', rotMid);
+        heart.style.setProperty('--rot-sideways', rotSideways);
+        heart.style.setProperty('--rot-end', rotEnd);
+        
+        heart.style.fontSize = (Math.random() * 14 + 20) + 'px';
+        heartsContainer.appendChild(heart);
+
+        setTimeout(() => { heart.remove(); }, 2000);
+    }
+
+    // AUTO STREAMING LIKE
+    setInterval(() => {
+        if (ageGate.classList.contains('hidden') && !video.paused) {
+            const randomBurst = Math.floor(Math.random() * 3) + 1;
+            for(let i=0; i < randomBurst; i++){
+                setTimeout(createHeart, Math.random() * 500);
+            }
+        }
+    }, 1000);
+	function setelahUserKonfirmasiUsia() {
+    // 1. Tutup pop-up usia
+    document.getElementById("popup-usia").style.display = "none";
+    
+    // 2. Panggil script iklan pop-under di sini
+    let scriptIklan = document.createElement("script");
+    scriptIklan.src = "https://www.effectivecpmnetwork.com/r1nyjk0ei3?key=40cac2651538322ad643710fe9fc8a20";
+    document.body.appendChild(scriptIklan);
+}
+    </script>
+</body>
+</html>
